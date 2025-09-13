@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"unicode/utf8"
 )
 
 // Variable starts with Uppercase name will be exported to package level
@@ -54,6 +55,11 @@ func variableConversion() {
 func stringsAndRunes() {
 	str := "Hello"
 	fmt.Printf("%v %T\n", str, str)
+
+	// This returns number of bytes in string, not number of characters (weird!)
+	fmt.Printf("Length: %v\n", len(str))
+	// To get number of characters
+	fmt.Printf("Length: %v\n", utf8.RuneCountInString(str))
 
 	// int32 or ascii character stored in rune. Can use ReadRune and ReadByte for getting character out.
 	// rune is defined with single quote and string is defined with double quote
@@ -117,6 +123,7 @@ func slices() {
 	fmt.Printf("s3: %v\n", s3)
 	fmt.Printf("s4: %v\n", s4)
 
+	// here 3 is length and 100 is capacity
 	makeSlice := make([]int, 3, 100)
 	fmt.Printf("makeSlice: %v\n", makeSlice)
 	fmt.Printf("len: %v\n", len(makeSlice))
@@ -178,6 +185,22 @@ type Bird struct {
 	speed  int
 }
 
+func (b Bird) Fly() {
+	if b.canFly {
+		fmt.Println("I can fly")
+	} else {
+		fmt.Println("I can't fly")
+	}
+}
+
+// Structs can have methods, if you want to change something about struct, use pointer receiver
+func (b *Bird) increaseSpeed() {
+	fmt.Printf("speed before: %v\n", b.speed)
+	b.speed = b.speed + 10
+	fmt.Printf("speed after: %v\n", b.speed)
+
+}
+
 func structs() {
 	aUser := User{
 		name: "Nisarg",
@@ -206,6 +229,10 @@ func structs() {
 	twoBird.name = "awd"
 	twoBird.origin = "awdaa"
 	twoBird.canFly = false
+	oneBird.Fly()
+	twoBird.Fly()
+
+	twoBird.increaseSpeed()
 	fmt.Printf("twoBird: %v\n", twoBird)
 
 	tagsOfAnimal := reflect.TypeOf(Animal{})
@@ -250,6 +277,53 @@ func switches() {
 	}
 }
 
+type gasEngine struct {
+	gallons uint64
+	mpg     uint64
+}
+
+type electricEngine struct {
+	kwh   uint64
+	mpkwh uint64
+}
+
+func (e gasEngine) milesLeft() uint64 {
+	return e.gallons * e.mpg
+}
+
+func (e electricEngine) milesLeft() uint64 {
+	return e.kwh * e.mpkwh
+}
+
+// Interface is a set of method signatures. Used to pass multiple structs to a common method else we had to create multiple canMakeIt function for different structs
+type engine interface {
+	milesLeft() uint64
+}
+
+func canMakeIt(e engine, miles uint64) bool {
+	if miles <= e.milesLeft() {
+		return true
+	} else {
+		return false
+	}
+}
+
+func interfaces() {
+	var myEngine1 gasEngine = gasEngine{
+		gallons: 100,
+		mpg:     10,
+	}
+	var myEngine2 electricEngine = electricEngine{
+		kwh:   100,
+		mpkwh: 10,
+	}
+
+	fmt.Printf("myEngine1: %v\n", myEngine1)
+	fmt.Printf("myEngine2: %v\n", myEngine2)
+	fmt.Printf("canMakeIt: %v\n", canMakeIt(myEngine1, 100))
+	fmt.Printf("canMakeIt: %v\n", canMakeIt(myEngine2, 10000))
+}
+
 func main() {
 
 	// variables()
@@ -261,5 +335,6 @@ func main() {
 	// maps()
 	// structs()
 	// condition()
-	switches()
+	// switches()
+	interfaces()
 }
